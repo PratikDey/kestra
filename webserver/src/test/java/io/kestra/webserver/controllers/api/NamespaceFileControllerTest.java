@@ -117,13 +117,17 @@ class NamespaceFileControllerTest {
     }
 
     @Test
-    void listNamespaceDirectoryFilesWithoutPreCreation() {
+    void listNamespaceDirectoryFilesNotExisting() {
+        // Root directory will be automatically created
         assertThat(storageInterface.exists(
             TENANT_ID, NAMESPACE, toNamespacedStorageUri(NAMESPACE, null))).isFalse();
         List<FileAttributes> res = List.of(client.toBlocking().retrieve(HttpRequest.GET("/api/v1/main/namespaces/" + NAMESPACE + "/files/directory"), TestFileAttributes[].class));
         assertThat(storageInterface.exists(
             TENANT_ID, NAMESPACE, toNamespacedStorageUri(NAMESPACE, null))).isTrue();
-        assertThat(res.stream().map(FileAttributes::getFileName).count()).isEqualTo(0L);
+        assertThat(res.size()).isEqualTo(0);
+
+        HttpClientResponseException notFoundException = assertThrows(HttpClientResponseException.class, () -> client.toBlocking().retrieve(HttpRequest.GET("/api/v1/main/namespaces/" + NAMESPACE + "/files/directory?path=/not_existing_directory"), TestFileAttributes[].class));
+        assertThat(notFoundException.getMessage()).contains("Directory not found: /not_existing_directory");
     }
 
     @Test
