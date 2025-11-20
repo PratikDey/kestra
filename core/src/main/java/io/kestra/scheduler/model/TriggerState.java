@@ -1,5 +1,6 @@
 package io.kestra.scheduler.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.kestra.core.models.executions.Execution;
 import io.kestra.core.models.flows.FlowId;
 import io.kestra.core.models.flows.State;
@@ -8,13 +9,16 @@ import io.kestra.core.models.triggers.Backfill;
 import io.kestra.core.models.triggers.TriggerContext;
 import io.kestra.core.models.triggers.TriggerId;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.time.chrono.ChronoZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Immutable class representing the state of a trigger.
@@ -22,6 +26,7 @@ import java.util.List;
 @Getter
 @EqualsAndHashCode
 @AllArgsConstructor
+@Builder
 public final class TriggerState implements TriggerId {
     private final String tenantId;
     private final String namespace;
@@ -35,6 +40,15 @@ public final class TriggerState implements TriggerId {
     private final Boolean disabled;
     private final Integer vnode;
     private final Boolean locked;
+    private final String workerId;
+    
+    @JsonProperty
+    public Long getNextEvaluationEpoch() {
+        return Optional.ofNullable(nextEvaluationDate)
+            .map(ChronoZonedDateTime::toInstant)
+            .map(Instant::toEpochMilli)
+            .orElse(null);
+    }
     
     public TriggerContext context() {
         return TriggerContext.builder()
@@ -76,7 +90,8 @@ public final class TriggerState implements TriggerId {
             stopAfter,
             disabled,
             vnode,
-            false
+            false,
+            null
         );
     }
     
@@ -93,7 +108,8 @@ public final class TriggerState implements TriggerId {
             trigger.getStopAfter(),
             trigger.isDisabled(),
             vnode,
-            locked
+            locked,
+            workerId
         );
     }
     
@@ -116,7 +132,8 @@ public final class TriggerState implements TriggerId {
             stopAfter,
             disabled,
             vnode,
-            locked
+            locked,
+            workerId
         );
     }
     
@@ -139,7 +156,8 @@ public final class TriggerState implements TriggerId {
             stopAfter,
             disabled,
             vnode,
-            locked
+            locked,
+            workerId
         );
     }
     
@@ -156,7 +174,8 @@ public final class TriggerState implements TriggerId {
             stopAfter,
             disabled,
             vnode,
-            locked
+            locked,
+            workerId
         );
     }
     
@@ -173,7 +192,8 @@ public final class TriggerState implements TriggerId {
             stopAfter,
             disabled,
             vnode,
-            locked
+            locked,
+            workerId
         );
     }
     
@@ -197,7 +217,8 @@ public final class TriggerState implements TriggerId {
             stopAfter,
             disabled,
             vnode,
-            locked
+            locked,
+            workerId
         );
     }
     
@@ -229,7 +250,8 @@ public final class TriggerState implements TriggerId {
             stopAfter,
             disabled,
             vnode,
-            locked
+            locked,
+            workerId
         );
     }
     
@@ -267,7 +289,8 @@ public final class TriggerState implements TriggerId {
             stopAfter,
             disabled,
             vnode,
-            locked
+            locked,
+            workerId
         );
     }
     
@@ -295,7 +318,8 @@ public final class TriggerState implements TriggerId {
             stopAfter,
             disabled,
             vnode,
-            false
+            false,
+            workerId
         );
     }
 }

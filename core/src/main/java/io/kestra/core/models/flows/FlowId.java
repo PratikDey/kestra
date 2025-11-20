@@ -1,7 +1,7 @@
 package io.kestra.core.models.flows;
 
 import io.kestra.core.models.executions.Execution;
-import io.kestra.core.models.triggers.Trigger;
+import io.kestra.scheduler.model.TriggerState;
 import io.kestra.core.models.triggers.TriggerId;
 import io.kestra.core.utils.IdUtils;
 import lombok.AllArgsConstructor;
@@ -40,7 +40,7 @@ public interface FlowId {
         return of(tenantId, namespace, id,null).toString();
     }
 
-    static String uid(Trigger trigger) {
+    static String uid(TriggerState trigger) {
         return of(trigger.getTenantId(), trigger.getNamespace(), trigger.getFlowId(), null).toString();
     }
 

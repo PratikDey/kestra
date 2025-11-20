@@ -12,10 +12,6 @@ interface TriggerFindOptions {
     [key: string]: any;
 }
 
-interface TriggerUpdateOptions {
-    [key: string]: any;
-}
-
 interface TriggerBackfillOptions {
     [key: string]: any;
 }
@@ -34,6 +30,20 @@ interface TriggerRestartOptions {
 
 interface TriggerBulkOptions {
     [key: string]: any;
+}
+
+interface CreateBackfillOptions {
+    namespace: string;
+    flowId: string;
+    triggerId: string;
+    backfill: any;
+}
+
+interface TriggerDisabledOptions {
+    namespace: string;
+    flowId: string;
+    triggerId: string;
+    disabled: boolean;
 }
 
 export const useTriggerStore = defineStore("trigger", {
@@ -63,12 +73,7 @@ export const useTriggerStore = defineStore("trigger", {
             const response = await this.$http.get(`${apiUrl()}/triggers/${options.namespace}/${options.flowId}`, {params: options});
             return response.data;
         },
-
-        async update(options: TriggerUpdateOptions) {
-            const response = await this.$http.put(`${apiUrl()}/triggers`, options);
-            return response.data;
-        },
-
+        
         async pauseBackfill(options: TriggerBackfillOptions) {
             const response = await this.$http.put(`${apiUrl()}/triggers/backfill/pause`, options);
             return response.data;
@@ -121,6 +126,16 @@ export const useTriggerStore = defineStore("trigger", {
 
         async deleteBackfillByTriggers(options: TriggerBulkOptions) {
             const response = await this.$http.post(`${apiUrl()}/triggers/backfill/delete/by-triggers`, options);
+            return response.data;
+        },
+
+        async createBackfill(options: CreateBackfillOptions) {
+            const response = await this.$http.put(`${apiUrl()}/triggers/backfill/`, options);
+            return response.data;
+        },
+        
+        async setDisabled(options: TriggerDisabledOptions) {
+            const response = await this.$http.put(`${apiUrl()}/set-disabled`, options);
             return response.data;
         },
 

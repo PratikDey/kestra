@@ -507,7 +507,7 @@
     };
 
     const postBackfill = () => {
-        triggerStore.update({
+        triggerStore.createBackfill({
             ...(selectedTrigger.value as unknown as object),
             backfill: backfill.value
         })
@@ -585,7 +585,7 @@
             });
             return;
         }
-        triggerStore.update({...trigger, disabled: !value})
+        triggerStore.setDisabled({...trigger, disabled: !value})
             .then(updatedTrigger => {
                 toast.saved(updatedTrigger.triggerId);
                 triggers.value = triggers.value?.map((t: any) => {

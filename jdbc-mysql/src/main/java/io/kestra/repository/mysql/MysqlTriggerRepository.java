@@ -1,6 +1,6 @@
 package io.kestra.repository.mysql;
 
-import io.kestra.core.models.triggers.Trigger;
+import io.kestra.scheduler.model.TriggerState;
 import io.kestra.core.utils.DateUtils;
 import io.kestra.jdbc.repository.AbstractJdbcTriggerRepository;
 import io.kestra.jdbc.services.JdbcFilterService;
@@ -18,7 +18,7 @@ import java.util.List;
 @MysqlRepositoryEnabled
 public class MysqlTriggerRepository extends AbstractJdbcTriggerRepository {
     @Inject
-    public MysqlTriggerRepository(@Named("triggers") MysqlRepository<Trigger> repository,
+    public MysqlTriggerRepository(@Named("triggers") MysqlRepository<TriggerState> repository,
                                   JdbcFilterService filterService) {
         super(repository, filterService);
     }

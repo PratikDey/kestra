@@ -15,7 +15,7 @@ import io.kestra.core.models.triggers.PollingTriggerInterface;
 import io.kestra.core.models.triggers.RealtimeTriggerInterface;
 import io.kestra.core.models.triggers.RecoverMissedSchedules;
 import io.kestra.core.models.triggers.Schedulable;
-import io.kestra.core.models.triggers.Trigger;
+import io.kestra.scheduler.model.TriggerState;
 import io.kestra.core.models.triggers.TriggerContext;
 import io.kestra.core.models.triggers.TriggerId;
 import io.kestra.core.models.triggers.WorkerTriggerInterface;
@@ -30,7 +30,6 @@ import io.kestra.core.utils.IdUtils;
 import io.kestra.scheduler.internals.DefaultSchedulableTriggerFetcher;
 import io.kestra.scheduler.internals.NextEvaluationDate;
 import io.kestra.scheduler.internals.SchedulableEvaluator;
-import io.kestra.scheduler.model.TriggerState;
 import io.kestra.scheduler.models.TriggerEvaluationContext;
 import io.kestra.scheduler.pubsub.TriggerExecutionPublisher;
 import io.kestra.scheduler.pubsub.TriggerWorkerJobPublisher;
@@ -161,7 +160,7 @@ public class TriggerScheduler {
                 int vNode = VNodes.computeVNodeFromFlow(flow, schedulerConfiguration.vnodes());
                     
                 // Check whether a state already exist for this trigger
-                TriggerState triggerState = triggers.get(Trigger.uid(flow, trigger));
+                TriggerState triggerState = triggers.get(TriggerId.of(flow, trigger).uid());
 
                 if (triggerState == null) {
                     RunContext runContext = runContextFactory.of(flow, trigger);
@@ -169,7 +168,7 @@ public class TriggerScheduler {
                     try {
 
                         // Create a TriggerState
-                        TriggerState newTriggerState = TriggerState.of(flow, trigger, vNode);
+                        TriggerState newTriggerState = io.kestra.scheduler.model.TriggerState.of(flow, trigger, vNode);
                         
                         // new worker triggers will be evaluated immediately except schedule that will be evaluated at the next cron schedule
                         if (trigger instanceof WorkerTriggerInterface) {

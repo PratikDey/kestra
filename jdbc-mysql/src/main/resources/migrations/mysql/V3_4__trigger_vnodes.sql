@@ -1,10 +1,13 @@
 -- Add generated columns
 ALTER TABLE triggers ADD COLUMN `vnode` INT GENERATED ALWAYS AS (CAST(value ->> '$.vnode' AS SIGNED)) STORED;
 ALTER TABLE triggers ADD COLUMN `locked` BOOLEAN GENERATED ALWAYS AS (CAST(value ->> '$.locked' AS UNSIGNED)) STORED;
+ALTER TABLE triggers ADD COLUMN `next_evaluation_epoch` BIGINT GENERATED ALWAYS AS (CAST(value ->> '$.nextEvaluationEpoch' AS BIGINT)) STORED;
+
+ALTER TABLE triggers DROP COLUMN `next_execution_date`;
 
 -- Indexes
 DROP INDEX ix_next_execution_date ON `triggers`;
-CREATE INDEX idx_trigger_scheduler ON `triggers` (`vnode`, `next_execution_date`, `locked`);
+CREATE INDEX idx_trigger_scheduler ON `triggers` (`vnode`, `next_evaluation_epoch`, `locked`);
 
 -- Queue trigger event table
 CREATE TABLE queue_trigger_event (

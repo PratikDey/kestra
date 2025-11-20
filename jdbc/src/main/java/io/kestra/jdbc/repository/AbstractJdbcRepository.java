@@ -251,10 +251,19 @@ public abstract class AbstractJdbcRepository {
     protected <F extends Enum<F>> Field<?> columnToField(ColumnDescriptor<?> column, Map<F, String> fieldsMapping) {
         return column.getField() != null ? field(fieldsMapping.get(column.getField())) : null;
     }
+    
+    protected Condition filter(
+        List<QueryFilter> filters,
+        String dateColumn,
+        Resource resource
+    ) {
+        return filter(filters, dateColumn, false, resource);
+    }
 
     protected Condition filter(
         List<QueryFilter> filters,
         String dateColumn,
+        boolean isDateColumnEpochMillis,
         Resource resource
     ) {
         List<Condition> conditions = new ArrayList<>();
@@ -264,7 +273,7 @@ public abstract class AbstractJdbcRepository {
                 QueryFilter.Field field = filter.field();
                 QueryFilter.Op operation = filter.operation();
                 Object value = filter.value();
-                conditions.add(getConditionOnField(field, value, operation, dateColumn));
+                conditions.add(getConditionOnField(field, value, operation, dateColumn, isDateColumnEpochMillis));
             }
         }
         return conditions.stream()
@@ -275,11 +284,12 @@ public abstract class AbstractJdbcRepository {
      *
      * @param dateColumn the JDBC column name of the logical date to filter on with {@link io.kestra.core.models.QueryFilter.Field#START_DATE} and/or {@link QueryFilter.Field#END_DATE}
      */
-    protected Condition getConditionOnField(
+    private Condition getConditionOnField(
         QueryFilter.Field field,
         Object value,
         QueryFilter.Op operation,
-        @Nullable String dateColumn
+        @Nullable String dateColumn,
+        boolean isDateColumnEpochMillis
     ) {
         if (field.equals(QueryFilter.Field.QUERY)) {
             return handleQuery(value, operation);
@@ -306,7 +316,7 @@ public abstract class AbstractJdbcRepository {
             OffsetDateTime dateTime = (value instanceof ZonedDateTime)
                 ? ((ZonedDateTime) value).toOffsetDateTime()
                 : ZonedDateTime.parse(value.toString()).toOffsetDateTime();
-            return applyDateCondition(dateTime, operation, dateColumn);
+            return applyDateCondition(dateTime, operation, dateColumn, isDateColumnEpochMillis);
         }
 
         if (field == QueryFilter.Field.SCOPE) {
@@ -420,14 +430,15 @@ public abstract class AbstractJdbcRepository {
         return field("level").in(levels.stream().map(level -> level.name()).toList());
     }
 
-    private Condition applyDateCondition(OffsetDateTime dateTime, QueryFilter.Op operation, String fieldName) {
+    private Condition applyDateCondition(OffsetDateTime dateTime, QueryFilter.Op operation, String fieldName, boolean epochMillis) {
+        final Object dateTimeValue = epochMillis ? dateTime.toInstant().toEpochMilli() : dateTime;
         return switch (operation) {
-            case LESS_THAN -> field(fieldName).lessThan(dateTime);
-            case LESS_THAN_OR_EQUAL_TO -> field(fieldName).lessOrEqual(dateTime);
-            case GREATER_THAN -> field(fieldName).greaterThan(dateTime);
-            case GREATER_THAN_OR_EQUAL_TO -> field(fieldName).greaterOrEqual(dateTime);
-            case EQUALS -> field(fieldName).eq(dateTime);
-            case NOT_EQUALS -> field(fieldName).ne(dateTime);
+            case LESS_THAN -> field(fieldName).lessThan(dateTimeValue);
+            case LESS_THAN_OR_EQUAL_TO -> field(fieldName).lessOrEqual(dateTimeValue);
+            case GREATER_THAN -> field(fieldName).greaterThan(dateTimeValue);
+            case GREATER_THAN_OR_EQUAL_TO -> field(fieldName).greaterOrEqual(dateTimeValue);
+            case EQUALS -> field(fieldName).eq(dateTimeValue);
+            case NOT_EQUALS -> field(fieldName).ne(dateTimeValue);
             default ->
                 throw new InvalidQueryFiltersException("Unsupported operation for date condition: " + operation);
         };
